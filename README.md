@@ -15,3 +15,4 @@ Sử dụng Multi-thread để tối ưu tốc độ uploads.
 Nâng Cao Kỹ Năng Lập Trình và Phát Triển Phần Mềm: Đề tài này đã mang lại cơ hội để nâng cao kỹ năng lập trình C# và phát triển ứng dụng có tính ứng dụng cao, từ đó củng cố kiến thức về lập trình mạng và tích hợp API vào ứng dụng.
 4. Quy trình xác thực người dùng
 Trong ứng dụng của chúng em, quy trình xác thực người dùng được thực hiện thông qua hai tệp tin quan trọng là credentials.json và token.json. 
+     
