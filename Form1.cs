@@ -109,7 +109,7 @@ namespace Nhom10
         {
 
         }
-        private async Task UploadFileAsync(DriveService service, string filePath, string folderId, int id)//trang
+        private async Task UploadFileAsync(DriveService service, string filePath, string folderId, int id)//mi
         {
             await Task.Run(() =>
             {
@@ -171,7 +171,7 @@ namespace Nhom10
                 }
             });
         }
-        private string GetFileIdInFolder(DriveService service, string fileName, string folderId)//trang
+        private string GetFileIdInFolder(DriveService service, string fileName, string folderId)//mi
         {
             try
             {
@@ -197,7 +197,51 @@ namespace Nhom10
                 return null!;
             }
         }
-        private void InvokeOnUiThread(Action action)//trang
+        private void UploadFile(DriveService service, string filePath, string folderId, int id)//tu
+        {
+            UploadFileAsync(service, filePath, folderId, id).Wait();
+        }
+        private async Task UploadFolderAsync(DriveService service, string localFolderPath, string parentFolderId)//tu
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    string folderName = Path.GetFileName(localFolderPath);
+                    string folderId = GetOrCreateFolderId(service, folderName, parentFolderId);
+
+                    // Get all files in the selected folder
+                    string[] filePaths = Directory.GetFiles(localFolderPath);
+                    string[] folderPaths = Directory.GetDirectories(localFolderPath);
+
+                    // Use Task.WhenAll to run the upload tasks concurrently
+                    var uploadTasks = folderPaths.Select(folderPath => Task.Run(() => UploadFolder(service, folderPath, folderId)))
+                        .Concat(filePaths.Select((filePath, index) => Task.Run(() => UploadFile(service, filePath, folderId, index))))
+                        .ToArray();
+
+                    Task.WaitAll(uploadTasks);
+
+                    InvokeOnUiThread(() =>
+                    {
+                        tbMess.Text = tbMess.Text + $"Folder {localFolderPath} uploaded successfully." + "\r\n";
+                    });
+                }
+                catch (Exception ex)
+                {
+                    InvokeOnUiThread(() =>
+                    {
+                        tbMess.Text = tbMess.Text + $"An error occurred: {ex.Message}" + "\r\n";
+                    });
+                }
+            });
+        }
+
+        private void UploadFolder(DriveService service, string localFolderPath, string parentFolderId)//tu
+        {
+            UploadFolderAsync(service, localFolderPath, parentFolderId).Wait();
+        }
+
+        private void InvokeOnUiThread(Action action)//mi
         {
             if (InvokeRequired)
             {
