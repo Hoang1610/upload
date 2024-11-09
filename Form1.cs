@@ -105,9 +105,59 @@ namespace Nhom10
             }
         }
 
-        private async void upLoadFileOrFolder(object sender, EventArgs e)
+        private async void upLoadFileOrFolder(object sender, EventArgs e)//vi
         {
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
 
+            string path = tbPath.Text;
+
+            try
+            {
+                bool flag = false;
+                if (Directory.Exists(path))
+                {
+                    flag = true;
+                    // Upload all files in the selected folder
+                    string parentFolderId = tbdes.Text == "" ? "root" : GetOrCreateFolderId(service, tbdes.Text, "root");
+                    await Task.Run(() => UploadFolder(service, path, parentFolderId));
+                }
+                else
+                {
+                    string[] filepaths = path.Split(";");
+                    var uploadTasks = new List<Task>();
+
+                    foreach (var filepath in filepaths)
+                    {
+                        if (File.Exists(filepath))
+                        {
+                            // Upload a single file
+                            flag = true;
+                            string pathRoot = tbdes.Text == "" ? "root" : GetOrCreateFolderId(service, tbdes.Text, "root");
+                            uploadTasks.Add(Task.Run(() => UploadFile(service, filepath, pathRoot, 0)));
+                        }
+                        else
+                        {
+                            tbMess.Text = tbMess.Text + "Invalid file path." + "\r\n";
+                        }
+                    }
+
+                    // Wait for all file upload tasks to complete
+                    await Task.WhenAll(uploadTasks);
+                }
+
+                if (!flag)
+                {
+                    tbMess.Text = tbMess.Text + "Invalid folder path." + "\r\n";
+                }
+            }
+            catch (Exception ex)
+            {
+                tbMess.Text = tbMess.Text + $"An error occurred: {ex.Message}" + "\r\n";
+            }
         }
         private async Task UploadFileAsync(DriveService service, string filePath, string folderId, int id)//mi
         {
@@ -252,9 +302,13 @@ namespace Nhom10
                 action();
             }
         }
-        private void FormDragDrop(object sender, DragEventArgs e)
-        {
 
+        private void FormDragDrop(object sender, DragEventArgs e)//vi
+        {
+            if (e.Data!.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.Copy;
+            else
+                e.Effect = DragDropEffects.None;
         }
 
         private void FormDragEnter(object sender, DragEventArgs e)
