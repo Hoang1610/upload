@@ -311,9 +311,13 @@ namespace Nhom10
                 e.Effect = DragDropEffects.None;
         }
 
-        private void FormDragEnter(object sender, DragEventArgs e)
+        private void FormDragEnter(object sender, DragEventArgs e)//vi
         {
-
+            if (e.Data!.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop)!;
+                tbPath.Text = string.Join(";", files!);
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -321,24 +325,40 @@ namespace Nhom10
 
         }
 
-        private void tbdes_Enter(object sender, EventArgs e)
+        private void tbdes_Enter(object sender, EventArgs e)//trang
         {
-
+            if (tbdes.Text == "Enter folder name destination")
+            {
+                tbdes.Text = "";
+                tbdes.ForeColor = Color.Black;
+            }
         }
 
-        private void tbdes_Leave(object sender, EventArgs e)
+        private void tbdes_Leave(object sender, EventArgs e)//trang
         {
-
+            if (tbdes.Text == "")
+            {
+                tbdes.Text = "Enter folder name destination";
+                tbdes.ForeColor = Color.LightGray;
+            }
         }
 
-        private void tbPath_Enter(object sender, EventArgs e)
+        private void tbPath_Enter(object sender, EventArgs e)//trang
         {
-
+            if (tbPath.Text == "Enter the path of the file or folder")
+            {
+                tbPath.Text = "";
+                tbPath.ForeColor = Color.Black;
+            }
         }
 
-        private void tbPath_Leave(object sender, EventArgs e)
+        private void tbPath_Leave(object sender, EventArgs e)//trang
         {
-
+            if (tbPath.Text == "")
+            {
+                tbPath.Text = "Enter the path of the file or folder";
+                tbPath.ForeColor = Color.LightGray;
+            }
         }
 
         private void tbPath_TextChanged(object sender, EventArgs e)
@@ -346,9 +366,21 @@ namespace Nhom10
 
         }
 
-        private void btn__Delete_click(object sender, EventArgs e)
+        private void btn__Delete_click(object sender, EventArgs e)//trang
         {
-
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
+            var req = service.Files.Delete(txt_id.Text);
+            string res = req.Execute();
+            if (res == null) MessageBox.Show(res);
+            else
+            {
+                tbMess.Text = tbMess.Text + $"{tbPath.Text} Delete successfully." + "\r\n";
+                txt_id.Text = "";
+            }
         }
 
         private void tbdes_TextChanged(object sender, EventArgs e)
