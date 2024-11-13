@@ -3,7 +3,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 
-namespace Nhom10
+namespace Nhom6
 {
     public partial class Form1 : Form
     {
@@ -17,7 +17,7 @@ namespace Nhom10
             StartUpload();
         }
 
-        private void StartUpload()//mi
+        private void StartUpload()
         {
             using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
@@ -33,7 +33,7 @@ namespace Nhom10
             }
         }
 
-        private void ChooseFiles(object sender, EventArgs e)//mi
+        private void ChooseFiles(object sender, EventArgs e)
         {
             using (var openFileDialog = new OpenFileDialog())
             {
@@ -54,7 +54,7 @@ namespace Nhom10
             }
         }
 
-        private void ChooseFolder(object sender, EventArgs e)//mi
+        private void ChooseFolder(object sender, EventArgs e)
         {
             using (var folderBrowserDialog = new FolderBrowserDialog())
             {
@@ -67,7 +67,7 @@ namespace Nhom10
             }
         }
 
-        private string GetOrCreateFolderId(DriveService service, string folderName, string parentFolderId)//mi
+        private string GetOrCreateFolderId(DriveService service, string folderName, string parentFolderId)
         {
             // Check if the folder already exists in the parent folder
             if (folderName == "")
@@ -105,7 +105,7 @@ namespace Nhom10
             }
         }
 
-        private async void upLoadFileOrFolder(object sender, EventArgs e)//vi
+        private async void upLoadFileOrFolder(object sender, EventArgs e)
         {
             var service = new DriveService(new BaseClientService.Initializer()
             {
@@ -159,7 +159,9 @@ namespace Nhom10
                 tbMess.Text = tbMess.Text + $"An error occurred: {ex.Message}" + "\r\n";
             }
         }
-        private async Task UploadFileAsync(DriveService service, string filePath, string folderId, int id)//mi
+
+
+        private async Task UploadFileAsync(DriveService service, string filePath, string folderId, int id)
         {
             await Task.Run(() =>
             {
@@ -221,7 +223,15 @@ namespace Nhom10
                 }
             });
         }
-        private string GetFileIdInFolder(DriveService service, string fileName, string folderId)//mi
+
+        // ...
+
+        private void UploadFile(DriveService service, string filePath, string folderId, int id)
+        {
+            UploadFileAsync(service, filePath, folderId, id).Wait();
+        }
+
+        private string GetFileIdInFolder(DriveService service, string fileName, string folderId)
         {
             try
             {
@@ -247,11 +257,8 @@ namespace Nhom10
                 return null!;
             }
         }
-        private void UploadFile(DriveService service, string filePath, string folderId, int id)//tu
-        {
-            UploadFileAsync(service, filePath, folderId, id).Wait();
-        }
-        private async Task UploadFolderAsync(DriveService service, string localFolderPath, string parentFolderId)//tu
+
+        private async Task UploadFolderAsync(DriveService service, string localFolderPath, string parentFolderId)
         {
             await Task.Run(() =>
             {
@@ -286,12 +293,16 @@ namespace Nhom10
             });
         }
 
-        private void UploadFolder(DriveService service, string localFolderPath, string parentFolderId)//tu
+        // ...
+
+        private void UploadFolder(DriveService service, string localFolderPath, string parentFolderId)
         {
             UploadFolderAsync(service, localFolderPath, parentFolderId).Wait();
         }
 
-        private void InvokeOnUiThread(Action action)//mi
+        // ...
+
+        private void InvokeOnUiThread(Action action)
         {
             if (InvokeRequired)
             {
@@ -302,8 +313,7 @@ namespace Nhom10
                 action();
             }
         }
-
-        private void FormDragDrop(object sender, DragEventArgs e)//vi
+        private void FormDragDrop(object sender, DragEventArgs e)
         {
             if (e.Data!.GetDataPresent(DataFormats.FileDrop))
                 e.Effect = DragDropEffects.Copy;
@@ -311,7 +321,7 @@ namespace Nhom10
                 e.Effect = DragDropEffects.None;
         }
 
-        private void FormDragEnter(object sender, DragEventArgs e)//vi
+        private void FormDragEnter(object sender, DragEventArgs e)
         {
             if (e.Data!.GetDataPresent(DataFormats.FileDrop))
             {
@@ -325,7 +335,7 @@ namespace Nhom10
 
         }
 
-        private void tbdes_Enter(object sender, EventArgs e)//trang
+        private void tbdes_Enter(object sender, EventArgs e)
         {
             if (tbdes.Text == "Enter folder name destination")
             {
@@ -334,7 +344,7 @@ namespace Nhom10
             }
         }
 
-        private void tbdes_Leave(object sender, EventArgs e)//trang
+        private void tbdes_Leave(object sender, EventArgs e)
         {
             if (tbdes.Text == "")
             {
@@ -343,7 +353,7 @@ namespace Nhom10
             }
         }
 
-        private void tbPath_Enter(object sender, EventArgs e)//trang
+        private void tbPath_Enter(object sender, EventArgs e)
         {
             if (tbPath.Text == "Enter the path of the file or folder")
             {
@@ -352,7 +362,7 @@ namespace Nhom10
             }
         }
 
-        private void tbPath_Leave(object sender, EventArgs e)//trang
+        private void tbPath_Leave(object sender, EventArgs e)
         {
             if (tbPath.Text == "")
             {
@@ -366,7 +376,7 @@ namespace Nhom10
 
         }
 
-        private void btn__Delete_click(object sender, EventArgs e)//trang
+        private void btn__Delete_click(object sender, EventArgs e)
         {
             var service = new DriveService(new BaseClientService.Initializer()
             {
@@ -400,13 +410,43 @@ namespace Nhom10
 
         private void Get_list_key(object sender, EventArgs e)
         {
+            try
+            {
+                var service = new DriveService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = ApplicationName,
+                });
+                string parentFolderId = tbdes.Text == "" ? "root" : GetOrCreateFolderId(service, tbdes.Text, "root");
+                var fileList = service.Files.List();
+                fileList.Q = $"mimeType!='application/vnd.google-apps.folder' and'{parentFolderId}' in parents";
+                fileList.Fields = "nextPageToken,files(id,name,size,mimeType,createdTime)";
+                var result = new List<Google.Apis.Drive.v3.Data.File>();
+                string pageToken = null;
+                do
+                {
+                    fileList.PageToken = pageToken;
+                    var fileResult = fileList.Execute();
+                    var files = fileResult.Files;
+                    pageToken = fileResult.NextPageToken;
+                    result.AddRange(files);
+                } while (pageToken != null);
 
+                foreach (var item in result)
+                {
+                    string fileDesc = item.Name + " " + item.Id + Environment.NewLine;
+                    tbMess.Text += fileDesc;
 
+                }
+            }
+            catch (Exception ex) { 
+            }
+            
         }
 
         private void tbMess_TextChanged(object sender, EventArgs e)
         {
-
+ 
         }
     }
 }
